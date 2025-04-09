@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import { SocketProvider } from "@/contexts/socket-context"
 import { ThemeProvider as ChatThemeProvider } from "@/contexts/theme-context"
+import { SidebarProvider } from "@/contexts/sidebar-context"
+import { ToastProvider, ToastListener } from "@/components/ui/use-toast"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,11 +26,18 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AuthProvider>
-            <SocketProvider>
-              <ChatThemeProvider>{children}</ChatThemeProvider>
-            </SocketProvider>
-          </AuthProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <SocketProvider>
+                <ChatThemeProvider>
+                  <SidebarProvider>
+                    {children}
+                    <ToastListener />
+                  </SidebarProvider>
+                </ChatThemeProvider>
+              </SocketProvider>
+            </AuthProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

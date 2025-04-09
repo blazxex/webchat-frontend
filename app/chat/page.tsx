@@ -3,13 +3,16 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
+import { useSidebar } from "@/contexts/sidebar-context"
 import { Sidebar } from "@/components/sidebar"
 import { ChatHeader } from "@/components/chat-header"
 import { ChatWindow } from "@/components/chat-window"
 import { ChatInput } from "@/components/chat-input"
+import { RoomMembers } from "@/components/room-members"
 
 export default function ChatPage() {
   const { user, isLoading } = useAuth()
+  const { isOpen } = useSidebar()
   const router = useRouter()
 
   useEffect(() => {
@@ -31,8 +34,13 @@ export default function ChatPage() {
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <ChatHeader />
-        <ChatWindow />
-        <ChatInput />
+        <div className="flex-1 flex">
+          <div className="flex-1 flex flex-col">
+            <ChatWindow />
+            <ChatInput />
+          </div>
+          <RoomMembers />
+        </div>
       </div>
     </div>
   )
