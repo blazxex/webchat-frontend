@@ -10,13 +10,17 @@ interface GifPickerProps {
   onSelect: (gifUrl: string) => void;
 }
 
+const LIMIT = 6;
+
 export function GifPicker({ onSelect }: GifPickerProps) {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [gifs, setGifs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const handleSearch = async () => {
+  const handleSearch = async (newOffset = 0) => {
     if (!search.trim()) return;
 
     setLoading(true);
@@ -26,11 +30,13 @@ export function GifPicker({ onSelect }: GifPickerProps) {
       const response = await fetch(
         `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(
           search
-        )}&limit=6&rating=pg`
+        )}&limit=${LIMIT}&offset=${newOffset}&rating=pg`
       );
       const data = await response.json();
       const urls = data.data.map((gif: any) => gif.images.fixed_height.url);
       setGifs(urls);
+      setTotalCount(data.pagination.total_count || 0);
+      setOffset(newOffset);
     } catch (error) {
       console.error("Failed to fetch GIFs:", error);
     } finally {
@@ -41,6 +47,18 @@ export function GifPicker({ onSelect }: GifPickerProps) {
   const handleSelect = (gifUrl: string) => {
     onSelect(gifUrl);
     setOpen(false);
+  };
+
+  const handleNext = () => {
+    if (offset + LIMIT < totalCount) {
+      handleSearch(offset + LIMIT);
+    }
+  };
+
+  const handleBack = () => {
+    if (offset - LIMIT >= 0) {
+      handleSearch(offset - LIMIT);
+    }
   };
 
   return (
@@ -60,10 +78,14 @@ export function GifPicker({ onSelect }: GifPickerProps) {
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1"
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearch();
+                if (e.key === "Enter") handleSearch(0);
               }}
             />
-            <Button variant="outline" size="icon" onClick={handleSearch}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleSearch(0)}
+            >
               <Search className="h-4 w-4" />
               <span className="sr-only">Search</span>
             </Button>
@@ -100,6 +122,30 @@ export function GifPicker({ onSelect }: GifPickerProps) {
               </div>
             )}
           </div>
+
+          {gifs.length > 0 && (
+            <div className="flex justify-between items-center pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBack}
+                disabled={offset === 0}
+              >
+                Back
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {offset / LIMIT + 1}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNext}
+                disabled={offset + LIMIT >= totalCount}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
