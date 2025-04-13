@@ -33,14 +33,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false)
   }, [])
 
+  // Login function - with the backend, login and register are the same operation
+  // The backend will auto-register if the username doesn't exist
   const login = async (username: string, password: string) => {
     setIsLoading(true)
     try {
-      // Mock API call - in a real app, this would be a fetch to your backend
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Mock successful login
-      const user = { id: `user-${Date.now()}`, username }
+      // Store credentials for socket connection
+      const user = { id: password, username }
       localStorage.setItem("user", JSON.stringify(user))
       setUser(user)
       router.push("/chat")
@@ -52,23 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Register function - same as login with this backend
   const register = async (username: string, password: string) => {
-    setIsLoading(true)
-    try {
-      // Mock API call - in a real app, this would be a fetch to your backend
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Mock successful registration
-      const user = { id: `user-${Date.now()}`, username }
-      localStorage.setItem("user", JSON.stringify(user))
-      setUser(user)
-      router.push("/chat")
-    } catch (error) {
-      console.error("Registration failed:", error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
+    return login(username, password)
   }
 
   const logout = () => {

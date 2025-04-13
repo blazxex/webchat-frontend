@@ -1,12 +1,16 @@
-"use client"
+"use client";
 
-import { Globe, Hash, Users, LogOut, Lock, Info, Menu } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useSocket } from "@/contexts/socket-context"
-import { useAuth } from "@/contexts/auth-context"
-import { useTheme } from "@/contexts/theme-context"
-import { useSidebar } from "@/contexts/sidebar-context"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Lock, LogOut, Info, Menu, Copy, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useSocket } from "@/contexts/socket-context";
+import { useAuth } from "@/contexts/auth-context";
+import { useSidebar } from "@/contexts/sidebar-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -14,93 +18,122 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Theme } from "@/contexts/socket-context";
+import { toast } from "@/components/ui/use-toast";
 
-const themes = [
-  { name: "Default", value: "bg-background" },
-  { name: "Slate", value: "bg-slate-100 dark:bg-slate-900" },
-  { name: "Blue", value: "bg-blue-50 dark:bg-blue-950" },
-  { name: "Green", value: "bg-green-50 dark:bg-green-950" },
-  { name: "Purple", value: "bg-purple-50 dark:bg-purple-950" },
-  { name: "Pink", value: "bg-pink-50 dark:bg-pink-950" },
-]
+const themeOptions = [
+  { name: "Default", value: Theme.DEFAULT },
+  { name: "Dark", value: Theme.DARK },
+  { name: "Light", value: Theme.LIGHT },
+  { name: "Space", value: Theme.SPACE },
+  { name: "Nature", value: Theme.NATURE },
+  { name: "Retro", value: Theme.RETRO },
+];
 
 export function ChatHeader() {
-  const { currentRoom, getRoomMembers } = useSocket()
-  const { logout } = useAuth()
-  const { setTheme } = useTheme()
-  const { toggle } = useSidebar()
-  const [showRoomInfo, setShowRoomInfo] = useState(false)
+  const { currentRoom, getRoomMembers, setRoomTheme, loading } = useSocket();
+  const { logout } = useAuth();
+  const { toggle } = useSidebar();
+  const [showRoomInfo, setShowRoomInfo] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  if (!currentRoom) return null
+  if (!currentRoom) return null;
 
-  const members = getRoomMembers(currentRoom.id)
-  const handleThemeChange = (theme: string) => {
-    setTheme(currentRoom.id, theme)
-  }
+  const members = getRoomMembers(currentRoom.hashName);
+
+  const handleThemeChange = async (theme: Theme) => {
+    const success = await setRoomTheme(currentRoom.hashName, theme);
+    if (success) {
+      toast({
+        title: "Theme updated",
+        description: `Room theme has been changed to ${theme.toLowerCase()}.`,
+      });
+    }
+  };
+
+  const handleCopyHashName = () => {
+    navigator.clipboard.writeText(currentRoom.hashName);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Format room name for display
+  const displayName =
+    currentRoom.type === "private"
+      ? members
+          .filter((m) => m.name !== localStorage.getItem("username"))
+          .map((m) => m.name)
+          .join(", ")
+      : currentRoom.name;
 
   return (
     <div className="h-16 border-b flex items-center justify-between px-4">
       <div className="flex items-center">
-        <Button variant="ghost" size="icon" onClick={toggle} className="md:hidden mr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggle}
+          className="md:hidden mr-2"
+        >
           <Menu className="h-5 w-5" />
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
-        {currentRoom.type === "global" ? (
-          <Globe className="h-5 w-5 mr-2" />
-        ) : currentRoom.type === "dm" ? (
-          <Users className="h-5 w-5 mr-2" />
-        ) : currentRoom.type === "private" ? (
-          <Lock className="h-5 w-5 mr-2" />
-        ) : (
-          <Hash className="h-5 w-5 mr-2" />
-        )}
+        <Lock className="h-5 w-5 mr-2" />
         <div>
-          <h2 className="font-semibold">{currentRoom.name}</h2>
-          <p className="text-xs text-muted-foreground">{members.length} members</p>
+          <h2 className="font-semibold">{displayName}</h2>
+          <p className="text-xs text-muted-foreground">
+            {members.length} members
+          </p>
         </div>
-        {currentRoom.type === "private" && (
-          <Dialog open={showRoomInfo} onOpenChange={setShowRoomInfo}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="ml-2">
-                <Info className="h-4 w-4" />
-                <span className="sr-only">Room Info</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Room Information</DialogTitle>
-                <DialogDescription>Share this room ID with others to let them join.</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="p-3 bg-muted rounded-md flex items-center justify-between">
-                  <code className="text-sm">{currentRoom.id}</code>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(currentRoom.id)
-                    }}
-                  >
-                    Copy
-                  </Button>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Members ({members.length})</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {members.map((member) => (
-                      <Badge key={member} variant="outline">
-                        {member}
-                      </Badge>
-                    ))}
-                  </div>
+        <Dialog open={showRoomInfo} onOpenChange={setShowRoomInfo}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="ml-2">
+              <Info className="h-4 w-4" />
+              <span className="sr-only">Room Info</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Room Information</DialogTitle>
+              <DialogDescription>
+                Share this room hash with others to let them join.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="p-3 bg-muted rounded-md flex items-center justify-between">
+                <code className="text-sm">{currentRoom.hashName}</code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyHashName}
+                  className="flex items-center gap-1"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copied ? "Copied" : "Copy"}
+                </Button>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-2">
+                  Members ({members.length})
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {members.map((member) => (
+                    <Badge key={member.id} variant="outline">
+                      {member.name}
+                    </Badge>
+                  ))}
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
-        )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex items-center gap-2">
@@ -111,8 +144,12 @@ export function ChatHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {themes.map((theme) => (
-              <DropdownMenuItem key={theme.value} onClick={() => handleThemeChange(theme.value)}>
+            {themeOptions.map((theme) => (
+              <DropdownMenuItem
+                key={theme.value}
+                onClick={() => handleThemeChange(theme.value)}
+                disabled={loading}
+              >
                 {theme.name}
               </DropdownMenuItem>
             ))}
@@ -125,5 +162,5 @@ export function ChatHeader() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

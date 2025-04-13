@@ -5,24 +5,27 @@ import { useAuth } from "@/contexts/auth-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 interface ChatMessageProps {
-  id: string
+  id: number
   content: string
-  sender: string
-  timestamp: number
-  type: "text" | "gif"
+  sender: {
+    id: number
+    name: string
+  }
+  createdAt: string
+  type?: "text" | "gif"
   gifUrl?: string
 }
 
-export function ChatMessage({ content, sender, timestamp, type, gifUrl }: ChatMessageProps) {
+export function ChatMessage({ content, sender, createdAt, type = "text", gifUrl }: ChatMessageProps) {
   const { user } = useAuth()
-  const isCurrentUser = user?.username === sender
-  const isSystem = sender === "system"
+  const isCurrentUser = user?.username === sender.name
+  const isSystem = sender.name === "system"
 
   // Get first letter of sender name for avatar
-  const avatarText = sender.charAt(0).toUpperCase()
+  const avatarText = sender.name.charAt(0).toUpperCase()
 
   // Format timestamp
-  const timeAgo = formatDistanceToNow(timestamp, { addSuffix: true })
+  const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true })
 
   if (isSystem) {
     return (
@@ -39,7 +42,7 @@ export function ChatMessage({ content, sender, timestamp, type, gifUrl }: ChatMe
       </Avatar>
       <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"}`}>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium">{sender}</span>
+          <span className="text-sm font-medium">{sender.name}</span>
           <span className="text-xs text-muted-foreground">{timeAgo}</span>
         </div>
         <div

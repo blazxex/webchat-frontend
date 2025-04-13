@@ -18,10 +18,10 @@ export function ChatInput() {
     if (!currentRoom) return
 
     if (selectedGif) {
-      sendMessage(message, currentRoom.id, "gif", selectedGif)
+      sendMessage(message, currentRoom.hashName, "gif", selectedGif)
       setSelectedGif(null)
     } else if (message.trim()) {
-      sendMessage(message, currentRoom.id)
+      sendMessage(message, currentRoom.hashName)
     }
 
     setMessage("")
