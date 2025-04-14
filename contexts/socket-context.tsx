@@ -64,7 +64,7 @@ type SocketContextType = {
   ) => void;
   joinRoomByHashName: (hashName: string) => Promise<boolean>;
   startPrivateChat: (otherUsername: string) => Promise<Room | null>;
-  createRoom: (name: string) => Promise<Room | null>;
+  createRoom: (roomName: string) => Promise<Room | null>;
   leaveRoom: (roomHashName: string) => void;
   getRoomMembers: (roomHashName: string) => User[];
   setRoomTheme: (roomHashName: string, theme: Theme) => Promise<boolean>;
@@ -86,6 +86,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
   const [loading, setLoading] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+
+  // Store sent message IDs to prevent duplicates
+  const sentMessagesRef = useRef<Set<string>>(new Set());
 
   // Connect to socket when user logs in
   useEffect(() => {
@@ -159,6 +162,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socket.on("private message", (data) => {
         console.log("Private message received:", data);
         const { content, from, room: roomHashName, createdAt } = data;
+        console.log("Room hash name:", roomHashName);
+        console.log("From:", from);
+        // Create a unique ID for this message
+        const messageId = `${roomHashName}-${from.id}-${content}-${
+          createdAt || Date.now()
+        }`;
+
+        // Check if we've already processed this message
+        if (sentMessagesRef.current.has(messageId)) {
+          console.log("Duplicate message detected, ignoring:", messageId);
+          return;
+        }
+
         const newMessage = {
           id: Date.now(),
           content,
@@ -174,10 +190,20 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         }));
       });
 
-      // Handle global messages
-      socket.on("global message", (data) => {
-        console.log("Global message received:", data);
+      // Handle public messages
+      socket.on("public message", (data) => {
+        console.log("Public message received:", data);
         const { content, from, to } = data;
+
+        // Create a unique ID for this message
+        const messageId = `${to.hashName}-${from.id}-${content}-${Date.now()}`;
+
+        // Check if we've already processed this message
+        if (sentMessagesRef.current.has(messageId)) {
+          console.log("Duplicate message detected, ignoring:", messageId);
+          return;
+        }
+
         const newMessage = {
           id: Date.now(),
           content,
@@ -238,7 +264,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         for (const room of privateRooms) {
           // Fetch messages for each room
           const msgResponse = await fetch(
-            `${API_BASE_URL}/room/${room.hashName}`
+            `${API_BASE_URL}/room/${room.hashName}`,
+            {
+              headers: {
+                username: user.username,
+                password: user.id,
+              },
+            }
           );
           const msgData = await msgResponse.json();
 
@@ -271,47 +303,53 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     const room = rooms.find((r) => r.hashName === roomHashName);
     if (!room) return;
 
-    // For private rooms, we need to find the other user
-    const otherMember = room.members.find((m) => m.user.id !== Number(user.id));
+    // Create a unique ID for this message to track it
+    const messageId = `${roomHashName}-${user.id}-${content}-${Date.now()}`;
 
-    if (room.type === "private" && otherMember) {
-      // Emit private message event
-      socketRef.current.emit(
-        "private message",
-        JSON.stringify({
-          content,
-          otherName: otherMember.user.name,
-          type,
-          gifUrl,
-        })
+    // Add to sent messages set to prevent duplicates
+    sentMessagesRef.current.add(messageId);
+
+    // Clean up old message IDs after 10 seconds to prevent memory leaks
+    setTimeout(() => {
+      sentMessagesRef.current.delete(messageId);
+    }, 10000);
+
+    if (room.type === "private") {
+      // For private rooms, we need to find the other user
+      const otherMember = room.members.find(
+        (m) => m.user.name !== user.username
       );
+      console.log(user, "MY USER");
+      console.log(room.members, "ROOM MEMBERS");
+      console.log("Other member:", otherMember);
+
+      if (otherMember) {
+        // Emit private message event
+        socketRef.current.emit(
+          "private message",
+          JSON.stringify({
+            content,
+            otherName: otherMember.user.name,
+            type,
+            gifUrl,
+          })
+        );
+      }
     } else {
-      // Emit global message event
+      // Emit public message event
       socketRef.current.emit(
-        "global message",
+        "public message",
         JSON.stringify({
           content,
+          hashRoomName: roomHashName,
           type,
           gifUrl,
         })
       );
     }
 
-    // Optimistically update UI
-    const newMessage: Message = {
-      id: Date.now(),
-      content,
-      sender: { id: Number(user.id), name: user.username },
-      roomId: room.id,
-      createdAt: new Date().toISOString(),
-      type,
-      gifUrl,
-    };
-
-    setMessages((prev) => ({
-      ...prev,
-      [roomHashName]: [...(prev[roomHashName] || []), newMessage],
-    }));
+    // We no longer need to optimistically update UI as we'll receive the message back from the server
+    // This prevents duplicate messages
   };
 
   // Join a room by hashName
@@ -321,7 +359,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Fetch room details from API
-      const response = await fetch(`${API_BASE_URL}/room/${hashName}`);
+      const response = await fetch(`${API_BASE_URL}/room/${hashName}`, {
+        headers: {
+          username: user.username,
+          password: user.id,
+        },
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -334,6 +377,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             hashRoomName: hashName,
           })
         );
+
+        // Wait for the join room event to be processed
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Add room to state if not already there
         setRooms((prev) => {
@@ -382,7 +428,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
       // Wait for room to be created and joined
       // The "join room" event will be emitted by the server
-      // We'll wait a bit to allow the event to be processed
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Refresh rooms to get the newly created room
@@ -448,6 +493,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            username: user.username,
+            password: user.id,
           },
           body: JSON.stringify({ theme }),
         }
@@ -472,35 +519,35 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Create a new room
+  // Create a new room using socket events
   const createRoom = async (roomName: string): Promise<Room | null> => {
-    if (!user || !connected) return null;
+    if (!user || !connected || !socketRef.current) return null;
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/room`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: roomName,
-          type: "private",
-        }),
-      });
+      // Use the create public room socket event instead of API call
+      socketRef.current.emit(
+        "create public room",
+        JSON.stringify({
+          roomName: roomName,
+        })
+      );
 
-      const data = await response.json();
-      if (data.success) {
-        const newRoom = data.data;
+      // Wait for the room to be created and joined
+      // The server will emit a "join room" event
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        // Add room to state
-        setRooms((prev) => [...prev, newRoom]);
+      // Refresh rooms to get the newly created room
+      await fetchRooms();
 
-        // Set as current room
+      // Find the newly created room by name
+      const newRoom = rooms.find((r) => r.name === roomName);
+
+      if (newRoom) {
         setCurrentRoom(newRoom);
-
         return newRoom;
       }
+
       return null;
     } catch (error) {
       console.error("Failed to create room:", error);

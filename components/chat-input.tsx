@@ -1,48 +1,52 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Send } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { GifPicker } from "./gif-picker"
-import { useSocket } from "@/contexts/socket-context"
+import { useState } from "react";
+import { Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { GifPicker } from "./gif-picker";
+import { useSocket } from "@/contexts/socket-context";
 
 export function ChatInput() {
-  const [message, setMessage] = useState("")
-  const [selectedGif, setSelectedGif] = useState<string | null>(null)
-  const { currentRoom, sendMessage } = useSocket()
+  const [message, setMessage] = useState("");
+  const [selectedGif, setSelectedGif] = useState<string | null>(null);
+  const { currentRoom, sendMessage } = useSocket();
 
   const handleSendMessage = () => {
-    if (!currentRoom) return
+    if (!currentRoom) return;
 
     if (selectedGif) {
-      sendMessage(message, currentRoom.hashName, "gif", selectedGif)
-      setSelectedGif(null)
+      sendMessage(message, currentRoom.hashName, "gif", selectedGif);
+      setSelectedGif(null);
     } else if (message.trim()) {
-      sendMessage(message, currentRoom.hashName)
+      sendMessage(message, currentRoom.hashName);
     }
 
-    setMessage("")
-  }
+    setMessage("");
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
+      e.preventDefault();
+      handleSendMessage();
     }
-  }
+  };
 
   const handleGifSelect = (gifUrl: string) => {
-    setSelectedGif(gifUrl)
-  }
+    setSelectedGif(gifUrl);
+  };
 
   return (
     <div className="p-4 border-t">
       {selectedGif && (
         <div className="mb-2 relative">
-          <img src={selectedGif || "/placeholder.svg"} alt="Selected GIF" className="h-20 rounded-md object-cover" />
+          <img
+            src={selectedGif || "/placeholder.svg"}
+            alt="Selected GIF"
+            className="h-20 rounded-md object-cover"
+          />
           <Button
             variant="destructive"
             size="icon"
@@ -76,5 +80,5 @@ export function ChatInput() {
         </div>
       </div>
     </div>
-  )
+  );
 }
