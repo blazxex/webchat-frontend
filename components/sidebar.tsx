@@ -1,5 +1,6 @@
 "use client";
-import { Lock, Users } from "lucide-react";
+
+import { Lock, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSocket } from "@/contexts/socket-context";
 import { useSidebar } from "@/contexts/sidebar-context";
@@ -7,17 +8,34 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { JoinRoomDialog } from "./join-room-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActiveUsers } from "./active-users";
 import { CreateRoomDialog } from "./create-room-dialog";
+import { useAuth } from "@/contexts/auth-context"; // ✅ added
 
 export function Sidebar() {
   const { rooms, currentRoom, joinRoomByHashName, loading } = useSocket();
   const { isOpen } = useSidebar();
+  const { user } = useAuth(); // ✅ current user info
 
   const handleSelectRoom = (room: any) => {
     joinRoomByHashName(room.hashName);
+  };
+
+  // ✅ Extract display name based on format
+  const getRoomDisplayName = (roomName: string): string => {
+    if (!user?.username) return roomName;
+
+    const regex = /^(.+)-(.+)$/;
+    const match = roomName.match(regex);
+
+    if (match) {
+      const [_, userA, userB] = match;
+      if (user.username === userA) return userB;
+      if (user.username === userB) return userA;
+    }
+
+    return roomName;
   };
 
   return (
@@ -38,7 +56,6 @@ export function Sidebar() {
         </h2>
       </div>
 
-      {/* Action buttons at the top */}
       <div
         className={cn(
           "flex flex-col gap-2 px-4 py-2",
@@ -49,7 +66,6 @@ export function Sidebar() {
         <CreateRoomDialog />
       </div>
 
-      {/* Tabs for Rooms and Users */}
       <Tabs defaultValue="rooms" className="flex-1 flex flex-col">
         <TabsList className="mx-4 mb-2">
           <TabsTrigger value="rooms" className="flex-1">
@@ -106,7 +122,7 @@ export function Sidebar() {
                         !isOpen && "hidden md:hidden"
                       )}
                     >
-                      {room.name}
+                      {getRoomDisplayName(room.name)} {}
                     </span>
                     {isOpen && (
                       <Badge variant="outline" className="ml-2">
