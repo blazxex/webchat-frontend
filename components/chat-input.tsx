@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { GifPicker } from "./gif-picker";
 import { useSocket } from "@/contexts/socket-context";
+import { toast } from "@/components/ui/use-toast";
 
 export function ChatInput() {
   const [message, setMessage] = useState("");
@@ -17,14 +18,29 @@ export function ChatInput() {
   const handleSendMessage = () => {
     if (!currentRoom) return;
 
-    if (selectedGif) {
-      sendMessage(message, currentRoom.hashName, "gif", selectedGif);
-      setSelectedGif(null);
-    } else if (message.trim()) {
-      sendMessage(message, currentRoom.hashName);
-    }
+    try {
+      if (selectedGif) {
+        // Send the GIF URL as the message content or append it to the message
+        const gifMessage = message.trim()
+          ? `${message}\n${selectedGif}` // If there's a message, append the GIF URL
+          : selectedGif; // Otherwise, just send the GIF URL
 
-    setMessage("");
+        sendMessage(gifMessage, currentRoom.hashName);
+        setSelectedGif(null);
+      } else if (message.trim()) {
+        // Send as regular text message
+        sendMessage(message, currentRoom.hashName);
+      }
+
+      setMessage("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

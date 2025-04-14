@@ -24,8 +24,6 @@ type Message = {
   };
   roomId: number;
   createdAt: string;
-  type?: "text" | "gif";
-  gifUrl?: string;
 };
 
 type Room = {
@@ -56,12 +54,7 @@ type SocketContextType = {
   rooms: Room[];
   currentRoom: Room | null;
   messages: Record<string, Message[]>;
-  sendMessage: (
-    content: string,
-    roomHashName: string,
-    type?: "text" | "gif",
-    gifUrl?: string
-  ) => void;
+  sendMessage: (content: string, roomHashName: string) => void;
   joinRoomByHashName: (hashName: string) => Promise<boolean>;
   startPrivateChat: (otherUsername: string) => Promise<Room | null>;
   createRoom: (roomName: string) => Promise<Room | null>;
@@ -162,8 +155,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socket.on("private message", (data) => {
         console.log("Private message received:", data);
         const { content, from, room: roomHashName, createdAt } = data;
-        console.log("Room hash name:", roomHashName);
-        console.log("From:", from);
+
         // Create a unique ID for this message
         const messageId = `${roomHashName}-${from.id}-${content}-${
           createdAt || Date.now()
@@ -181,7 +173,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           sender: from,
           roomId: 0, // We don't have the room ID here, but it's not critical
           createdAt: createdAt || new Date().toISOString(),
-          type: "text",
         };
 
         setMessages((prev) => ({
@@ -210,7 +201,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           sender: from,
           roomId: to.id,
           createdAt: new Date().toISOString(),
-          type: "text",
         };
 
         setMessages((prev) => ({
@@ -239,7 +229,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(true);
     try {
-      // Get joined rooms
       const joinedResponse = await fetch(
         `${API_BASE_URL}/room/joined?username=${user.username}`,
         {
@@ -291,12 +280,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Send message to a room
-  const sendMessage = (
-    content: string,
-    roomHashName: string,
-    type: "text" | "gif" = "text",
-    gifUrl?: string
-  ) => {
+  const sendMessage = (content: string, roomHashName: string) => {
     if (!user || !connected || !socketRef.current) return;
 
     // Find the room by hashName
@@ -314,42 +298,44 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       sentMessagesRef.current.delete(messageId);
     }, 10000);
 
+    // Create the message payload
+    const messagePayload: any = {
+      content,
+    };
+
     if (room.type === "private") {
       // For private rooms, we need to find the other user
       const otherMember = room.members.find(
         (m) => m.user.name !== user.username
       );
-      console.log(user, "MY USER");
-      console.log(room.members, "ROOM MEMBERS");
-      console.log("Other member:", otherMember);
 
       if (otherMember) {
         // Emit private message event
+        messagePayload.otherName = otherMember.user.name;
         socketRef.current.emit(
           "private message",
-          JSON.stringify({
-            content,
-            otherName: otherMember.user.name,
-            type,
-            gifUrl,
-          })
+          JSON.stringify(messagePayload)
         );
       }
     } else {
       // Emit public message event
-      socketRef.current.emit(
-        "public message",
-        JSON.stringify({
-          content,
-          hashRoomName: roomHashName,
-          type,
-          gifUrl,
-        })
-      );
+      messagePayload.hashRoomName = roomHashName;
+      socketRef.current.emit("public message", JSON.stringify(messagePayload));
     }
 
-    // We no longer need to optimistically update UI as we'll receive the message back from the server
-    // This prevents duplicate messages
+    // Add message to UI immediately for better UX
+    // const newMessage: Message = {
+    //   id: Date.now(),
+    //   content,
+    //   sender: { id: Number(user.id), name: user.username },
+    //   roomId: room.id,
+    //   createdAt: new Date().toISOString(),
+    // };
+
+    // setMessages((prev) => ({
+    //   ...prev,
+    //   [roomHashName]: [...(prev[roomHashName] || []), newMessage],
+    // }));
   };
 
   // Join a room by hashName
