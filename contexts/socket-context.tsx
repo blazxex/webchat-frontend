@@ -214,13 +214,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       // Get joined rooms
-      const joinedResponse = await fetch(`${API_BASE_URL}/room/joined`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: user.id }),
-      });
+      const joinedResponse = await fetch(
+        `${API_BASE_URL}/room/joined?username=${user.username}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const joinedData = await joinedResponse.json();
 
