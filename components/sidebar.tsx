@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActiveUsers } from "./active-users";
+import { CreateRoomDialog } from "./create-room-dialog";
 
 export function Sidebar() {
   const { rooms, currentRoom, joinRoomByHashName, loading } = useSocket();
@@ -40,11 +41,12 @@ export function Sidebar() {
       {/* Action buttons at the top */}
       <div
         className={cn(
-          "flex justify-center items-center px-4 py-2",
+          "flex flex-col gap-2 px-4 py-2",
           !isOpen && "hidden md:flex"
         )}
       >
         <JoinRoomDialog />
+        <CreateRoomDialog />
       </div>
 
       {/* Tabs for Rooms and Users */}
@@ -122,7 +124,7 @@ export function Sidebar() {
           value="users"
           className="flex-1 overflow-hidden mt-0 data-[state=active]:flex-1"
         >
-          <ActiveUsers />
+          <ActiveUsers isOpen={isOpen} />
         </TabsContent>
       </Tabs>
     </div>

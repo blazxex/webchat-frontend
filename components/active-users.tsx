@@ -8,12 +8,19 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Loader2, MessageSquare } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
-export function ActiveUsers() {
+// Update the component props to include isOpen
+interface ActiveUsersProps {
+  isOpen?: boolean;
+}
+
+export function ActiveUsers({ isOpen = true }: ActiveUsersProps) {
   const { activeUsers, startPrivateChat, loading } = useSocket();
   const { user } = useAuth();
   const [startingChat, setStartingChat] = useState<number | null>(null);
 
+  // Update the handleStartChat function to be more explicit about creating a private room
   const handleStartChat = async (otherUser: { id: number; name: string }) => {
     if (otherUser.id === Number(user?.id)) {
       toast({
@@ -29,21 +36,21 @@ export function ActiveUsers() {
       const room = await startPrivateChat(otherUser.name);
       if (room) {
         toast({
-          title: "Chat started",
-          description: `You are now chatting with ${otherUser.name}.`,
+          title: "Private room created",
+          description: `You are now in a private room with ${otherUser.name}.`,
         });
       } else {
         toast({
-          title: "Failed to start chat",
-          description: "Could not start a chat with this user.",
+          title: "Failed to create private room",
+          description: "Could not create a private room with this user.",
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error("Error starting chat:", error);
+      console.error("Error creating private room:", error);
       toast({
         title: "Error",
-        description: "An error occurred while starting the chat.",
+        description: "An error occurred while creating the private room.",
         variant: "destructive",
       });
     } finally {
@@ -80,17 +87,17 @@ export function ActiveUsers() {
                   <span className="text-sm font-medium">{activeUser.name}</span>
                 </div>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => handleStartChat(activeUser)}
                   disabled={loading || startingChat === activeUser.id}
+                  className="flex items-center gap-1"
                 >
                   {startingChat === activeUser.id ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <MessageSquare className="h-4 w-4" />
                   )}
-                  <span className="sr-only">Message {activeUser.name}</span>
                 </Button>
               </div>
             ))

@@ -64,6 +64,7 @@ type SocketContextType = {
   ) => void;
   joinRoomByHashName: (hashName: string) => Promise<boolean>;
   startPrivateChat: (otherUsername: string) => Promise<Room | null>;
+  createRoom: (name: string) => Promise<Room | null>;
   leaveRoom: (roomHashName: string) => void;
   getRoomMembers: (roomHashName: string) => User[];
   setRoomTheme: (roomHashName: string, theme: Theme) => Promise<boolean>;
@@ -469,6 +470,44 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Create a new room
+  const createRoom = async (roomName: string): Promise<Room | null> => {
+    if (!user || !connected) return null;
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/room`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: roomName,
+          type: "private",
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        const newRoom = data.data;
+
+        // Add room to state
+        setRooms((prev) => [...prev, newRoom]);
+
+        // Set as current room
+        setCurrentRoom(newRoom);
+
+        return newRoom;
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to create room:", error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SocketContext.Provider
       value={{
@@ -480,6 +519,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         sendMessage,
         joinRoomByHashName,
         startPrivateChat,
+        createRoom,
         leaveRoom,
         getRoomMembers,
         setRoomTheme,
