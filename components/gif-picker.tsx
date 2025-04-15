@@ -128,7 +128,7 @@ export function GifPicker({ onSelect }: GifPickerProps) {
           <span className="text-xs font-bold">GIF</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md [&>button]:hidden">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <Input
