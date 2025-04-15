@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, Users, Loader2 } from "lucide-react";
+import { Lock, Users, Globe, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSocket } from "@/contexts/socket-context";
 import { useSidebar } from "@/contexts/sidebar-context";
@@ -11,18 +11,17 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActiveUsers } from "./active-users";
 import { CreateRoomDialog } from "./create-room-dialog";
-import { useAuth } from "@/contexts/auth-context"; // ✅ added
+import { useAuth } from "@/contexts/auth-context";
 
 export function Sidebar() {
   const { rooms, currentRoom, joinRoomByHashName, loading } = useSocket();
   const { isOpen } = useSidebar();
-  const { user } = useAuth(); // ✅ current user info
+  const { user } = useAuth();
 
   const handleSelectRoom = (room: any) => {
     joinRoomByHashName(room.hashName);
   };
 
-  // ✅ Extract display name based on format
   const getRoomDisplayName = (roomName: string): string => {
     if (!user?.username) return roomName;
 
@@ -37,6 +36,58 @@ export function Sidebar() {
 
     return roomName;
   };
+
+  const globalRoom = rooms.find((room) => room.type === "global");
+  const privateRooms = rooms.filter((room) => room.type === "public");
+  const dms = rooms.filter((room) => room.type === "private");
+
+  const renderRoomSection = (
+    title: string,
+    icon: React.ReactNode,
+    roomList: any[]
+  ) => (
+    <div className="px-2 py-1">
+      <h3
+        className={cn(
+          "px-2 py-1 text-xs font-medium text-muted-foreground",
+          !isOpen && "hidden md:hidden"
+        )}
+      >
+        {title}
+      </h3>
+      {roomList.length === 0 ? (
+        <div className="px-4 py-2 text-sm text-muted-foreground">
+          {isOpen ? "No rooms available" : ""}
+        </div>
+      ) : (
+        roomList.map((room) => (
+          <Button
+            key={room.hashName}
+            variant={
+              currentRoom?.hashName === room.hashName ? "secondary" : "ghost"
+            }
+            className={cn(
+              "w-full justify-start mb-1",
+              !isOpen && "md:justify-center md:px-2"
+            )}
+            onClick={() => handleSelectRoom(room)}
+          >
+            {icon}
+            <span
+              className={cn("truncate flex-1", !isOpen && "hidden md:hidden")}
+            >
+              {getRoomDisplayName(room.name)}
+            </span>
+            {isOpen && (
+              <Badge variant="outline" className="ml-2">
+                {room.members?.length ?? 0}
+              </Badge>
+            )}
+          </Button>
+        ))
+      )}
+    </div>
+  );
 
   return (
     <div
@@ -83,56 +134,32 @@ export function Sidebar() {
           className="flex-1 overflow-hidden mt-0 data-[state=active]:flex-1"
         >
           <ScrollArea className="h-[calc(100vh-160px)]">
-            <div className="px-2 py-1">
-              <h3
-                className={cn(
-                  "px-2 py-1 text-xs font-medium text-muted-foreground",
-                  !isOpen && "hidden md:hidden"
+            {loading ? (
+              <div className="flex justify-center items-center py-4">
+                <Loader2 className="h-4 w-4 animate-spin" />
+              </div>
+            ) : (
+              <>
+                {globalRoom &&
+                  renderRoomSection(
+                    "Public Room",
+                    <Globe className="h-4 w-4 mr-2" />,
+                    [globalRoom]
+                  )}
+
+                {renderRoomSection(
+                  "Private Rooms",
+                  <Lock className="h-4 w-4 mr-2" />,
+                  privateRooms
                 )}
-              >
-                Private Rooms
-              </h3>
-              {loading ? (
-                <div className="flex justify-center items-center py-4">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </div>
-              ) : rooms.length === 0 ? (
-                <div className="px-4 py-2 text-sm text-muted-foreground">
-                  {isOpen ? "No rooms joined" : ""}
-                </div>
-              ) : (
-                rooms.map((room) => (
-                  <Button
-                    key={room.hashName}
-                    variant={
-                      currentRoom?.hashName === room.hashName
-                        ? "secondary"
-                        : "ghost"
-                    }
-                    className={cn(
-                      "w-full justify-start mb-1",
-                      !isOpen && "md:justify-center md:px-2"
-                    )}
-                    onClick={() => handleSelectRoom(room)}
-                  >
-                    <Lock className="h-4 w-4 mr-2" />
-                    <span
-                      className={cn(
-                        "truncate flex-1",
-                        !isOpen && "hidden md:hidden"
-                      )}
-                    >
-                      {getRoomDisplayName(room.name)} {}
-                    </span>
-                    {isOpen && (
-                      <Badge variant="outline" className="ml-2">
-                        {room.members?.length ?? 0}
-                      </Badge>
-                    )}
-                  </Button>
-                ))
-              )}
-            </div>
+
+                {renderRoomSection(
+                  "DMs",
+                  <MessageCircle className="h-4 w-4 mr-2" />,
+                  dms
+                )}
+              </>
+            )}
           </ScrollArea>
         </TabsContent>
 

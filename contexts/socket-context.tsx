@@ -534,6 +534,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       await fetchRooms();
 
       // Find the newly created room by name
+      console.log("Rooms after creating:", rooms);
+      console.log("Room name:", roomName);
       const newRoom = rooms.find((r) => r.name === roomName);
 
       if (newRoom) {
