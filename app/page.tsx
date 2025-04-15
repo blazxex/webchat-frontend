@@ -1,40 +1,47 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AuthPage() {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const { login, register, isLoading } = useAuth()
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login, register, isLoading } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
     try {
-      await login(username, password)
+      await login(username, password);
     } catch (err) {
-      setError("Login failed. Please check your credentials.")
+      setError("Login failed. Please check your credentials.");
     }
-  }
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
     try {
-      await register(username, password)
+      await register(username, password);
     } catch (err) {
-      setError("Registration failed. Please try again.")
+      setError("Registration failed. Please try again.");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
@@ -44,9 +51,9 @@ export default function AuthPage() {
           <CardDescription>Connect with friends in real-time</CardDescription>
         </CardHeader>
         <Tabs defaultValue="login">
-          <TabsList className="grid grid-cols-2 w-full">
+          <TabsList className="grid grid-cols-1 w-full">
             <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
+            {/* <TabsTrigger value="register">Register</TabsTrigger> */}
           </TabsList>
           <TabsContent value="login">
             <form onSubmit={handleLogin}>
@@ -117,5 +124,5 @@ export default function AuthPage() {
         </Tabs>
       </Card>
     </div>
-  )
+  );
 }
