@@ -224,8 +224,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   // Fetch rooms from API
-  const fetchRooms = async () => {
-    if (!user) return;
+  const fetchRooms = async (): Promise<Room[] | null> => {
+    if (!user) return null;
 
     setLoading(true);
     try {
@@ -242,14 +242,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       const joinedData = await joinedResponse.json();
 
       if (joinedData.success) {
-        // Filter to only show private rooms as per requirements
         const Rooms = joinedData.data;
         setRooms(Rooms);
 
         // Initialize messages for each room
         const messagesObj: Record<string, Message[]> = {};
         for (const room of Rooms) {
-          // Fetch messages for each room
           const msgResponse = await fetch(
             `${API_BASE_URL}/room/${room.hashName}`,
             {
@@ -269,12 +267,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         }
 
         setMessages(messagesObj);
+        return Rooms;
       }
     } catch (error) {
       console.error("Failed to fetch rooms:", error);
     } finally {
       setLoading(false);
     }
+
+    return null;
   };
 
   // Send message to a room
@@ -531,7 +532,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Refresh rooms to get the newly created room
-      await fetchRooms();
+      const rooms = await fetchRooms();
 
       // Find the newly created room by name
       console.log("Rooms after creating:", rooms);
