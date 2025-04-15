@@ -62,10 +62,12 @@ export function ChatHeader() {
 
   // Format room name for display
   const displayName =
-    currentRoom.type === "private"
-      ? members
-          .filter((m) => m.name !== localStorage.getItem("username"))
-          .map((m) => m.name)
+    currentRoom.type === "private" &&
+    currentRoom.members &&
+    currentRoom.members.length > 0
+      ? currentRoom.members
+          .filter((m) => m.user.name !== localStorage.getItem("username"))
+          .map((m) => m.user.name)
           .join(", ")
       : currentRoom.name;
 

@@ -243,14 +243,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
       if (joinedData.success) {
         // Filter to only show private rooms as per requirements
-        const privateRooms = joinedData.data.filter(
-          (room: Room) => room.type === "private"
-        );
-        setRooms(privateRooms);
+        const Rooms = joinedData.data;
+        setRooms(Rooms);
 
         // Initialize messages for each room
         const messagesObj: Record<string, Message[]> = {};
-        for (const room of privateRooms) {
+        for (const room of Rooms) {
           // Fetch messages for each room
           const msgResponse = await fetch(
             `${API_BASE_URL}/room/${room.hashName}`,
@@ -340,6 +338,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   // Join a room by hashName
   const joinRoomByHashName = async (hashName: string): Promise<boolean> => {
+    console.log("using joinRoomByHashName", hashName);
     if (!user || !connected || !socketRef.current) return false;
     setLoading(true);
 
@@ -351,6 +350,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           password: user.id,
         },
       });
+      console.log("Response:", response);
       const data = await response.json();
 
       if (data.success) {
@@ -378,12 +378,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         setCurrentRoom(room);
 
         // Initialize messages for this room
-        if (!messages[hashName]) {
-          setMessages((prev) => ({
-            ...prev,
-            [hashName]: room.messages || [],
-          }));
-        }
+        setMessages((prev) => ({
+          ...prev,
+          [hashName]: room.messages || [],
+        }));
 
         return true;
       }
@@ -402,7 +400,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   ): Promise<Room | null> => {
     if (!user || !connected || !socketRef.current) return null;
     setLoading(true);
-
+    console.log("Using startPrivateChat");
     try {
       // Emit join private room event (which creates the room if it doesn't exist)
       socketRef.current.emit(
@@ -420,12 +418,16 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       await fetchRooms();
 
       // Find the newly created room
-      const newRoom = rooms.find(
-        (r) =>
-          r.members.some((m) => m.user.name === otherUsername) &&
-          r.members.some((m) => m.user.id === Number(user.id))
-      );
+      console.log("Rooms after fetching:", rooms);
+      console.log("Other username:", otherUsername);
+      const possibleNames = [
+        `${user.username}-${otherUsername}`,
+        `${otherUsername}-${user.username}`,
+      ];
 
+      const newRoom = rooms.find((r) => possibleNames.includes(r.name));
+
+      console.log("New room found:", newRoom);
       if (newRoom) {
         setCurrentRoom(newRoom);
         return newRoom;
@@ -461,7 +463,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   // Get room members
   const getRoomMembers = (roomHashName: string): User[] => {
     const room = rooms.find((r) => r.hashName === roomHashName);
-    return room ? room.members.map((m) => m.user) : [];
+    if (!room || !room.members) return [];
+
+    return room.members.map((m) => ({
+      id: m.user.id,
+      name: m.user.name,
+    }));
   };
 
   // Set room theme

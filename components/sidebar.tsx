@@ -126,7 +126,7 @@ export function Sidebar() {
                     </span>
                     {isOpen && (
                       <Badge variant="outline" className="ml-2">
-                        {room.members.length}
+                        {room.members?.length ?? 0}
                       </Badge>
                     )}
                   </Button>

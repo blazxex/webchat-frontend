@@ -34,6 +34,7 @@ export function ActiveUsers({ isOpen = true }: ActiveUsersProps) {
     setStartingChat(otherUser.id);
     try {
       const room = await startPrivateChat(otherUser.name);
+      console.log("Private room created:", room);
       if (room) {
         toast({
           title: "Private room created",
