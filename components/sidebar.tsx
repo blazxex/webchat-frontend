@@ -1,6 +1,13 @@
 "use client";
 
-import { Lock, Users, Globe, MessageCircle, Loader2 } from "lucide-react";
+import {
+  Lock,
+  Unlock,
+  Users,
+  Globe,
+  MessageCircle,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSocket } from "@/contexts/socket-context";
 import { useSidebar } from "@/contexts/sidebar-context";
@@ -19,7 +26,9 @@ export function Sidebar() {
   const { user } = useAuth();
 
   const handleSelectRoom = (room: any) => {
-    joinRoomByHashName(room.hashName);
+    if (room.isUserJoined) {
+      joinRoomByHashName(room.hashName);
+    }
   };
 
   const getRoomDisplayName = (roomName: string): string => {
@@ -31,8 +40,7 @@ export function Sidebar() {
     if (match) {
       const [_, userA, userB] = match;
       if (user.username === userA && user.username === userB) {
-        const roomName = `${userA} (self)`;
-        return roomName;
+        return `${userA} (self)`;
       }
       if (user.username === userA) return userB;
       if (user.username === userB) return userA;
@@ -49,8 +57,8 @@ export function Sidebar() {
 
   const renderRoomSection = (
     title: string,
-    icon: React.ReactNode,
-    roomList: any[]
+    roomList: any[],
+    getIcon: (room: any) => React.ReactNode
   ) => (
     <div className="px-2 py-1">
       <h3
@@ -74,11 +82,13 @@ export function Sidebar() {
             }
             className={cn(
               "w-full justify-start mb-1",
-              !isOpen && "md:justify-center md:px-2"
+              !isOpen && "md:justify-center md:px-2",
+              !room.isUserJoined && "cursor-not-allowed opacity-50"
             )}
             onClick={() => handleSelectRoom(room)}
+            disabled={!room.isUserJoined}
           >
-            {icon}
+            {getIcon(room)}
             <span
               className={cn("truncate flex-1", !isOpen && "hidden md:hidden")}
             >
@@ -147,22 +157,24 @@ export function Sidebar() {
             ) : (
               <>
                 {globalRoom &&
-                  renderRoomSection(
-                    "Public Room",
-                    <Globe className="h-4 w-4 mr-2" />,
-                    [globalRoom]
-                  )}
+                  renderRoomSection("Global", [globalRoom], (room) => (
+                    <Globe className="h-4 w-4 mr-2" />
+                  ))}
 
-                {renderRoomSection(
-                  "Private Rooms",
-                  <Lock className="h-4 w-4 mr-2" />,
-                  privateRooms
+                {renderRoomSection("Public Rooms", privateRooms, (room) =>
+                  room.isUserJoined ? (
+                    <Unlock className="h-4 w-4 mr-2 text-green-500" />
+                  ) : (
+                    <Lock className="h-4 w-4 mr-2 text-red-500" />
+                  )
                 )}
 
-                {renderRoomSection(
-                  "DMs",
-                  <MessageCircle className="h-4 w-4 mr-2" />,
-                  dms
+                {renderRoomSection("Private Rooms", dms, (room) =>
+                  room.isUserJoined ? (
+                    <Unlock className="h-4 w-4 mr-2 text-green-500" />
+                  ) : (
+                    <Lock className="h-4 w-4 mr-2 text-red-500" />
+                  )
                 )}
               </>
             )}
