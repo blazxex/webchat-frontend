@@ -52,7 +52,14 @@ export function Sidebar() {
   const globalRoom = rooms.find((room) => room.name === "Global");
   const privateRooms = rooms.filter(
     (room) => room.type === "public" && room.name !== "Global"
-  );
+  ).sort((a, b) => {
+    if (a.isUserJoined && !b.isUserJoined) {
+      return -1;
+    } else if (!a.isUserJoined && b.isUserJoined) {
+      return 1;
+    }
+    return a.name.localeCompare(b.name);
+  });;
   const dms = rooms.filter((room) => room.type === "private");
 
   const renderRoomSection = (
