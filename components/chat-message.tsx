@@ -12,9 +12,10 @@ interface ChatMessageProps {
     name: string;
   };
   createdAt: string;
+  themeClass: string; 
 }
 
-export function ChatMessage({ content, sender, createdAt }: ChatMessageProps) {
+export function ChatMessage({ content, sender, createdAt, themeClass }: ChatMessageProps) {
   const { user } = useAuth();
   const isCurrentUser = user?.username === sender.name;
   const isSystem = sender.name === "system";
@@ -49,6 +50,8 @@ export function ChatMessage({ content, sender, createdAt }: ChatMessageProps) {
   };
 
   const { gifUrl, text } = extractGifAndText(content);
+  // const textColorClass = themeClass.match(/text-\S+/)?.[0] || "text-black";
+  const textColor = isCurrentUser ? "text-white" : "text-black"
 
   if (isSystem) {
     return (
@@ -67,7 +70,7 @@ export function ChatMessage({ content, sender, createdAt }: ChatMessageProps) {
       }`}
     >
       <Avatar className="h-8 w-8">
-        <AvatarFallback className="text-xs">{avatarText}</AvatarFallback>
+        <AvatarFallback className="text-xs text-black">{avatarText}</AvatarFallback>
       </Avatar>
       <div
         className={`flex flex-col ${
@@ -76,7 +79,7 @@ export function ChatMessage({ content, sender, createdAt }: ChatMessageProps) {
       >
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium">{sender.name}</span>
-          <span className="text-xs text-muted-foreground">{timeAgo}</span>
+          <span className="text-xs">{timeAgo}</span>
         </div>
         <div
           className={`w-full max-w-md break-words rounded-lg p-3 ${
@@ -96,13 +99,13 @@ export function ChatMessage({ content, sender, createdAt }: ChatMessageProps) {
                 }}
               />
               {text && (
-                <p className="text-sm mt-2 break-words whitespace-pre-wrap">
+                <p className={`text-sm mt-2 break-words whitespace-pre-wrap ${textColor}`}>
                   {text}
                 </p>
               )}
             </div>
           ) : (
-            <p className="text-sm break-words whitespace-pre-wrap">{content}</p>
+            <p className={`text-sm break-words whitespace-pre-wrap ${textColor}`}>{content}</p>
           )}
         </div>
       </div>
