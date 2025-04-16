@@ -79,7 +79,7 @@ export function ChatMessage({ content, sender, createdAt }: ChatMessageProps) {
           <span className="text-xs text-muted-foreground">{timeAgo}</span>
         </div>
         <div
-          className={`max-w-[80%] rounded-lg p-3 ${
+          className={`w-full max-w-md break-words rounded-lg p-3 ${
             isCurrentUser ? "bg-primary text-primary-foreground" : "bg-muted"
           }`}
         >
