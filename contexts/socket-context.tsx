@@ -140,6 +140,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           }
           return prevRooms;
         });
+        fetchRooms();
       });
 
       // Handle join room event
