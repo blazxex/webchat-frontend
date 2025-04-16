@@ -48,10 +48,28 @@ export function CreateRoomDialog() {
 
   const handleCopyHashName = () => {
     if (!createdRoom) return;
-
     navigator.clipboard.writeText(createdRoom.hashName);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(createdRoom.hashName)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch((err) => console.error("Clipboard copy failed", err));
+    } else {
+      // Fallback to using document.execCommand() (deprecated but still works)
+      const textArea = document.createElement('textarea');
+      textArea.value = createdRoom.hashName;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const handleClose = () => {
