@@ -4,9 +4,15 @@ import { useState, useEffect } from "react";
 import { Search, X, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
-// Fallback GIFs in case API key is not available
 const fallbackGifs = [
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDdtZ2R2Ymx5cXMwcWRrenVrNHd1NWFxcnBnYnl4cjVwcWR0cWtvdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aCTfyhOZ4kDxaJG/giphy.gif",
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDdtZ2R2Ymx5cXMwcWRrenVrNHd1NWFxcnBnYnl4cjVwcWR0cWtvdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYt5jPR6QX5pnqM/giphy.gif",
@@ -29,7 +35,6 @@ export function GifPicker({ onSelect }: GifPickerProps) {
   const [hasMore, setHasMore] = useState(true);
   const [currentSearch, setCurrentSearch] = useState("");
 
-  // Reset pagination when search changes
   useEffect(() => {
     if (open && search !== currentSearch) {
       setOffset(0);
@@ -37,7 +42,6 @@ export function GifPicker({ onSelect }: GifPickerProps) {
     }
   }, [search, currentSearch, open]);
 
-  // Update the handleSearch function to use the GIPHY API key
   const handleSearch = async () => {
     if (!search.trim()) return;
 
@@ -77,7 +81,6 @@ export function GifPicker({ onSelect }: GifPickerProps) {
     }
   };
 
-  // Update the handleNext function to use the GIPHY API key
   const handleNext = async () => {
     if (loading || !hasMore) return;
 
@@ -129,6 +132,15 @@ export function GifPicker({ onSelect }: GifPickerProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md [&>button]:hidden">
+        <DialogTitle asChild>
+          <VisuallyHidden>GIF Picker</VisuallyHidden>
+        </DialogTitle>
+        <DialogDescription asChild>
+          <VisuallyHidden>
+            Search and select a GIF to send in your message
+          </VisuallyHidden>
+        </DialogDescription>
+
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <Input
