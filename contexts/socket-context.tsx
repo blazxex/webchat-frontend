@@ -40,6 +40,7 @@ type Room = {
   }[];
   messages?: Message[];
   createdAt: string;
+  isUserJoined: boolean;
 };
 
 type User = {
@@ -230,11 +231,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   // Fetch rooms from API
   const fetchRooms = async (): Promise<Room[] | null> => {
     if (!user) return null;
-
+    // `${API_BASE_URL}/room/?name=${user.username}`,
     setLoading(true);
     try {
       const joinedResponse = await fetch(
-        `${API_BASE_URL}/room/joined?username=${user.username}`,
+        `${API_BASE_URL}/room/?name=${user.username}`,
         {
           method: "GET",
           headers: {
@@ -244,9 +245,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       );
 
       const joinedData = await joinedResponse.json();
-
+      console.log("Joined rooms dataX:", joinedData);
       if (joinedData.success) {
         const Rooms = joinedData.data;
+        console.log("Joined rooms data:", Rooms);
         setRooms(Rooms);
 
         // Initialize messages for each room
@@ -464,10 +466,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const getRoomMembers = (roomHashName: string): User[] => {
     const room = rooms.find((r) => r.hashName === roomHashName);
     if (!room || !room.members) return [];
-
+    console.log("Room members:", room.members);
+    console.log("Room hash name:", roomHashName);
     return room.members.map((m) => ({
-      id: m.user.id,
-      name: m.user.name,
+      id: m.id,
+      name: m.name,
     }));
   };
 
