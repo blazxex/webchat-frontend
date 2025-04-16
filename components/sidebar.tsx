@@ -99,7 +99,10 @@ export function Sidebar() {
           >
             {getIcon(room)}
             <span
-              className={cn("truncate whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px]", !isOpen && "hidden md:hidden")}
+              className={cn(
+                "truncate whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px]",
+                !isOpen && "hidden md:hidden"
+              )}
             >
               {getRoomDisplayName(room.name)}
             </span>
@@ -179,13 +182,9 @@ export function Sidebar() {
                   )
                 )}
 
-                {renderRoomSection("Private Rooms", dms, (room) =>
-                  room.isUserJoined ? (
-                    <Unlock className="h-4 w-4 mr-2 text-green-500" />
-                  ) : (
-                    <Lock className="h-4 w-4 mr-2 text-red-500" />
-                  )
-                )}
+                {renderRoomSection("Private Rooms", dms, (room) => (
+                  <MessageCircle className="h-4 w-4 mr-2 text-green-500" />
+                ))}
               </>
             )}
           </ScrollArea>
