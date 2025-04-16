@@ -174,7 +174,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           roomId: 0, // We don't have the room ID here, but it's not critical
           createdAt: createdAt || new Date().toISOString(),
         };
-
+        console.log("New message:", newMessage);
         setMessages((prev) => ({
           ...prev,
           [roomHashName]: [...(prev[roomHashName] || []), newMessage],
@@ -308,14 +308,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         (m) => m.user.name !== user.username
       );
 
-      if (otherMember) {
-        // Emit private message event
-        messagePayload.otherName = otherMember.user.name;
-        socketRef.current.emit(
-          "private message",
-          JSON.stringify(messagePayload)
-        );
-      }
+      messagePayload.otherName = otherMember?.user.name ?? null;
+      console.log("Emitting private message to:", messagePayload.otherName);
+      socketRef.current.emit("private message", JSON.stringify(messagePayload));
     } else {
       // Emit public message event
       messagePayload.hashRoomName = roomHashName;
@@ -416,7 +411,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Refresh rooms to get the newly created room
-      await fetchRooms();
+      const rooms = await fetchRooms();
 
       // Find the newly created room
       console.log("Rooms after fetching:", rooms);

@@ -37,8 +37,10 @@ export function Sidebar() {
     return roomName;
   };
 
-  const globalRoom = rooms.find((room) => room.type === "global");
-  const privateRooms = rooms.filter((room) => room.type === "public");
+  const globalRoom = rooms.find((room) => room.name === "Global");
+  const privateRooms = rooms.filter(
+    (room) => room.type === "public" && room.name !== "Global"
+  );
   const dms = rooms.filter((room) => room.type === "private");
 
   const renderRoomSection = (
