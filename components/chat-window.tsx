@@ -45,14 +45,14 @@ export function ChatWindow() {
     <div className={`flex-1 flex flex-col ${themeClass} overflow-hidden`}>
       <ScrollArea
         className="flex-1 p-4"
-        style={{ height: "calc(100vh - 180px)" }}
+        // style={{ height: "calc(100vh - 180px)" }}
       >
         {currentMessages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
             <p className="text-muted-foreground">No messages yet</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="h-[calc(60vh)] space-y-4">
             {currentMessages.map((msg, index) => (
               <ChatMessage
                 key={`${msg.id}-${index}`}

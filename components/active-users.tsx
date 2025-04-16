@@ -61,20 +61,22 @@ export function ActiveUsers({ isOpen = true }: ActiveUsersProps) {
 
   // Filter out current user from active users
   const filteredUsers = activeUsers.filter((u) => u.id !== Number(user?.id));
-
+  const uniqueUsers = Array.from(
+    new Map(filteredUsers.map(user => [user.id, user])).values()
+  );
   return (
     <div className="p-4 border-t">
       <h3 className="font-medium mb-2">
-        Active Users ({filteredUsers.length})
+        Active Users ({uniqueUsers.length})
       </h3>
       <ScrollArea className="h-[calc(100vh-400px)]">
         <div className="space-y-2">
-          {filteredUsers.length === 0 ? (
+          {uniqueUsers.length === 0 ? (
             <p className="text-sm text-muted-foreground py-2">
               No active users
             </p>
           ) : (
-            filteredUsers.map((activeUser) => (
+            uniqueUsers.map((activeUser) => (
               <div
                 key={activeUser.id}
                 className="flex items-center justify-between p-2 rounded-md hover:bg-muted"

@@ -216,6 +216,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         setActiveUsers((prev) => prev.filter((u) => u.id !== data.userID));
       });
 
+      socket.on("public : user connected", (data) => {
+        fetchRooms()
+      });
+
       // Clean up on unmount
       return () => {
         socket.disconnect();

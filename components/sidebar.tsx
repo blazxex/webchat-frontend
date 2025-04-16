@@ -90,12 +90,12 @@ export function Sidebar() {
           >
             {getIcon(room)}
             <span
-              className={cn("truncate flex-1", !isOpen && "hidden md:hidden")}
+              className={cn("truncate whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px]", !isOpen && "hidden md:hidden")}
             >
               {getRoomDisplayName(room.name)}
             </span>
             {isOpen && (
-              <Badge variant="outline" className="ml-2">
+              <Badge variant="outline" className="ml-auto">
                 {room.members?.length ?? 0}
               </Badge>
             )}
