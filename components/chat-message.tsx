@@ -90,16 +90,19 @@ export function ChatMessage({ content, sender, createdAt }: ChatMessageProps) {
                 alt="GIF"
                 className="rounded-md w-full h-auto"
                 onError={(e) => {
-                  // Fallback if GIF fails to load
                   const target = e.target as HTMLImageElement;
                   target.onerror = null;
                   target.src = "/placeholder.svg?height=200&width=300";
                 }}
               />
-              {text && <p className="text-sm mt-2">{text}</p>}
+              {text && (
+                <p className="text-sm mt-2 break-words whitespace-pre-wrap">
+                  {text}
+                </p>
+              )}
             </div>
           ) : (
-            <p className="text-sm">{content}</p>
+            <p className="text-sm break-words whitespace-pre-wrap">{content}</p>
           )}
         </div>
       </div>
