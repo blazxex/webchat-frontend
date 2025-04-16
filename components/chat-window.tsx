@@ -11,8 +11,8 @@ const themeClasses = {
   [Theme.DEFAULT]: "bg-gray-200",
   [Theme.DARK]: "bg-slate-900 text-slate-100",
   [Theme.LIGHT]: "bg-slate-50",
-  [Theme.SPACE]: "bg-indigo-950 text-indigo-200",
-  [Theme.NATURE]: "bg-gradient-to-r from-green-100 to-green-200 text-green-800 dark:bg-green-950",
+  [Theme.SPACE]: "bg-[url('/bg-space.jpg')] bg-cover bg-center text-indigo-200",
+  [Theme.NATURE]: "bg-[url('/bg-nature.jpg')] bg-cover bg-center text-green-200 dark:bg-green-950",
   [Theme.RETRO]: "bg-gradient-to-r from-blue-500 to-purple-500 text-slate-200 dark:bg-amber-950",
 };
 
@@ -41,6 +41,8 @@ export function ChatWindow() {
   const themeClass =
     themeClasses[currentRoom.theme] || themeClasses[Theme.DEFAULT];
 
+  const textColorClass = themeClass.match(/text-\S+/)?.[0] || "text-black";
+
   return (
     <div className={`flex-1 flex flex-col ${themeClass} overflow-hidden`}>
       <ScrollArea
@@ -49,7 +51,7 @@ export function ChatWindow() {
       >
         {currentMessages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <p className="text-muted-foreground">No messages yet</p>
+            <p className={`${textColorClass}`}>No messages yet</p>
           </div>
         ) : (
           <div className="h-[calc(60vh)] space-y-4">
@@ -60,8 +62,6 @@ export function ChatWindow() {
                 content={msg.content}
                 sender={msg.sender}
                 createdAt={msg.createdAt}
-                type={msg.type}
-                gifUrl={msg.gifUrl}
                 themeClass={themeClass}
               />
             ))}

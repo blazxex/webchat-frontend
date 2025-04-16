@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from 'tailwindcss/plugin';
 
 const config: Config = {
     darkMode: ["class"],
@@ -91,6 +92,22 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"),
+    plugin(function ({ addUtilities }) {
+		const newUtilities: Record<string, Record<string, string>> = {
+		  '.text-outline': {
+			'-webkit-text-stroke': '0.5px black',
+		  },
+		  '.text-outline-white': {
+			'-webkit-text-stroke': '0.5px white',
+		  },
+		  '.text-outline-2': {
+			'-webkit-text-stroke': '2px black',
+		  },
+		};
+  
+		addUtilities(newUtilities);
+	  }),
+  ],
 };
 export default config;
