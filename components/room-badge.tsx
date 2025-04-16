@@ -26,7 +26,7 @@ export function RoomBadge({ room }: { room: any }) {
                     <ul className="space-y-2">
                         {room.members?.map((member: any, index: number) => (
                             <li key={index} className="text-sm">
-                                {member.name}
+                                {member.user.name}
                             </li>
                         ))}
                     </ul>

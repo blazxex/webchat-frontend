@@ -83,7 +83,7 @@ export function Sidebar() {
         </div>
       ) : (
         roomList.map((room) => (
-          <div className="flex items-center space-x-2">
+          <div key={room.hashName} className="flex items-center space-x-2">
           <Button
             key={room.hashName}
             variant={
