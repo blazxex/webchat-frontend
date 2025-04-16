@@ -30,6 +30,10 @@ export function Sidebar() {
 
     if (match) {
       const [_, userA, userB] = match;
+      if (user.username === userA && user.username === userB) {
+        const roomName = `${userA} (self)`;
+        return roomName;
+      }
       if (user.username === userA) return userB;
       if (user.username === userB) return userA;
     }
