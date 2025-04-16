@@ -210,6 +210,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         }));
       });
 
+      socket.on("room theme updated", ({ hashName, theme }) => {
+        console.log("Theme changed to " + theme);
+        setRooms((prev) =>
+          prev.map((room) =>
+            room.hashName === hashName ? { ...room, theme } : room
+          )
+        );
+        
+        if (currentRoom?.hashName === hashName) {
+          setCurrentRoom((prev) => prev && { ...prev, theme });
+        }
+      });
+
       // Handle user disconnection
       socket.on("user disconnected", (data) => {
         console.log("User disconnected:", data);
@@ -474,15 +487,26 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  // Set room theme
+  // Set room theme using socket + persist to database
   const setRoomTheme = async (
     roomHashName: string,
     theme: Theme
   ): Promise<boolean> => {
-    if (!user || !connected) return false;
+    if (!user || !connected || !socketRef.current) return false;
     setLoading(true);
 
     try {
+      console.log("Emit change room theme: " + theme);
+      // Emit socket event for real-time update
+      socketRef.current.emit(
+        "change room theme",
+        JSON.stringify({
+          hashRoomName: roomHashName,
+          theme,
+        })
+      );
+
+      // Update to database via HTTP
       const response = await fetch(
         `${API_BASE_URL}/room/${roomHashName}/theme`,
         {
@@ -498,14 +522,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json();
       if (data.success) {
-        setRooms((prev) =>
-          prev.map((r) => (r.hashName === roomHashName ? { ...r, theme } : r))
-        );
-        if (currentRoom?.hashName === roomHashName) {
-          setCurrentRoom((prev) => (prev ? { ...prev, theme } : null));
-        }
         return true;
       }
+
       return false;
     } catch (error) {
       console.error("Failed to set room theme:", error);
