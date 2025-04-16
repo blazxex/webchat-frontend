@@ -126,6 +126,21 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           { id: data.user.id, name: data.user.name, socketId: data.socketId },
         ]);
       });
+      socket.on("new room created", (data) => {
+        console.log("New room created event received:", data);
+        const { room } = data;
+
+        // Add to rooms only if it doesn't already exist
+        setRooms((prevRooms) => {
+          const alreadyExists = prevRooms.some(
+            (r) => r.hashName === room.hashName
+          );
+          if (!alreadyExists) {
+            return [...prevRooms, room];
+          }
+          return prevRooms;
+        });
+      });
 
       // Handle join room event
       socket.on("join room", (data) => {
