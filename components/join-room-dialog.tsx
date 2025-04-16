@@ -46,7 +46,7 @@ export function JoinRoomDialog() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="w-full">
-          Join Room by Hash
+          Join Room
         </Button>
       </DialogTrigger>
       <DialogContent>

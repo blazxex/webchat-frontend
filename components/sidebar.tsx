@@ -115,8 +115,8 @@ export function Sidebar() {
 
       <div
         className={cn(
-          "flex flex-col gap-2 px-4 py-2",
-          !isOpen && "hidden md:flex"
+          "grid grid-cols-2 gap-2 px-4 py-2",
+          !isOpen && "hidden md:grid"
         )}
       >
         <JoinRoomDialog />
