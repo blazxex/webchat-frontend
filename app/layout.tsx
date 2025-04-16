@@ -1,31 +1,35 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/contexts/auth-context"
-import { SocketProvider } from "@/contexts/socket-context"
-import { ThemeProvider as ChatThemeProvider } from "@/contexts/theme-context"
-import { SidebarProvider } from "@/contexts/sidebar-context"
-import { ToastProvider, ToastListener } from "@/components/ui/use-toast"
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/auth-context";
+import { SocketProvider } from "@/contexts/socket-context";
+import { ThemeProvider as ChatThemeProvider } from "@/contexts/theme-context";
+import { SidebarProvider } from "@/contexts/sidebar-context";
+import { ToastProvider, ToastListener } from "@/components/ui/use-toast";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "WebChat",
   description: "Real-time web chat application",
-    generator: 'v0.dev'
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <ToastProvider>
             <AuthProvider>
               <SocketProvider>
@@ -41,8 +45,7 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
 
-
-import './globals.css'
+import "./globals.css";
