@@ -8,12 +8,12 @@ import { Theme } from "@/contexts/socket-context";
 
 // Map theme enum to CSS classes
 const themeClasses = {
-  [Theme.DEFAULT]: "bg-background",
+  [Theme.DEFAULT]: "bg-gray-200",
   [Theme.DARK]: "bg-slate-900 text-slate-100",
   [Theme.LIGHT]: "bg-slate-50",
-  [Theme.SPACE]: "bg-indigo-950 text-indigo-50",
-  [Theme.NATURE]: "bg-green-50 dark:bg-green-950",
-  [Theme.RETRO]: "bg-amber-50 dark:bg-amber-950",
+  [Theme.SPACE]: "bg-indigo-950 text-indigo-200",
+  [Theme.NATURE]: "bg-gradient-to-r from-green-100 to-green-200 text-green-800 dark:bg-green-950",
+  [Theme.RETRO]: "bg-gradient-to-r from-blue-500 to-purple-500 text-slate-200 dark:bg-amber-950",
 };
 
 export function ChatWindow() {
@@ -62,6 +62,7 @@ export function ChatWindow() {
                 createdAt={msg.createdAt}
                 type={msg.type}
                 gifUrl={msg.gifUrl}
+                themeClass={themeClass}
               />
             ))}
             <div ref={scrollRef} />
