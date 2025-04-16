@@ -134,7 +134,7 @@ export function CreateRoomDialog() {
                 </p>
                 <div className="p-3 bg-muted rounded-md flex items-center justify-between">
                   <code className="text-sm">{createdRoom.hashName}</code>
-                  <Button
+                  {navigator.clipboard && <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleCopyHashName}
@@ -146,7 +146,7 @@ export function CreateRoomDialog() {
                       <Copy className="h-4 w-4" />
                     )}
                     {copied ? "Copied" : "Copy"}
-                  </Button>
+                  </Button>}
                 </div>
               </div>
             </div>

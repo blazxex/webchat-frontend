@@ -122,19 +122,19 @@ export function ChatHeader() {
             <div className="space-y-4">
               <div className="p-3 bg-muted rounded-md flex items-center justify-between">
                 <code className="text-sm">{currentRoom.hashName}</code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCopyHashName}
-                  className="flex items-center gap-1"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                  {copied ? "Copied" : "Copy"}
-                </Button>
+                {navigator.clipboard && <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopyHashName}
+                    className="flex items-center gap-1"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>}
               </div>
               <div>
                 <h4 className="text-sm font-medium mb-2">
