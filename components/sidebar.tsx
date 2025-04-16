@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActiveUsers } from "./active-users";
 import { CreateRoomDialog } from "./create-room-dialog";
 import { useAuth } from "@/contexts/auth-context";
+import { RoomBadge } from "./room-badge";
 
 export function Sidebar() {
   const { rooms, currentRoom, joinRoomByHashName, loading } = useSocket();
@@ -82,6 +83,7 @@ export function Sidebar() {
         </div>
       ) : (
         roomList.map((room) => (
+          <div className="flex items-center space-x-2">
           <Button
             key={room.hashName}
             variant={
@@ -101,12 +103,13 @@ export function Sidebar() {
             >
               {getRoomDisplayName(room.name)}
             </span>
-            {isOpen && (
-              <Badge variant="outline" className="ml-auto">
-                {room.members?.length ?? 0}
-              </Badge>
-            )}
           </Button>
+          {isOpen && (
+            <div className="cursor-pointer">
+              <RoomBadge room={room} />
+            </div>
+          )}
+          </div>
         ))
       )}
     </div>
