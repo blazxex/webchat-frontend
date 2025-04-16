@@ -34,6 +34,7 @@ export function GifPicker({ onSelect }: GifPickerProps) {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [currentSearch, setCurrentSearch] = useState("");
+  const [history, setHistory] = useState<number[]>([]);
 
   useEffect(() => {
     if (open && search !== currentSearch) {
@@ -42,55 +43,10 @@ export function GifPicker({ onSelect }: GifPickerProps) {
     }
   }, [search, currentSearch, open]);
 
-  const handleSearch = async () => {
-    if (!search.trim()) return;
-
+  const fetchGifs = async (newOffset: number) => {
     setLoading(true);
-    setCurrentSearch(search);
-    setOffset(0);
-
     try {
       const apiKey = process.env.NEXT_PUBLIC_GIPHY_API_KEY;
-
-      if (!apiKey) {
-        console.error("GIPHY API key not found");
-        setGifs(fallbackGifs);
-        return;
-      }
-
-      const response = await fetch(
-        `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(
-          search
-        )}&limit=6&offset=0&rating=pg`
-      );
-      const data = await response.json();
-
-      if (data.data && data.data.length > 0) {
-        const urls = data.data.map((gif: any) => gif.images.fixed_height.url);
-        setGifs(urls);
-        setHasMore(data.pagination.total_count > 6);
-      } else {
-        setGifs([]);
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Failed to fetch GIFs:", error);
-      setGifs(fallbackGifs);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleNext = async () => {
-    if (loading || !hasMore) return;
-
-    const newOffset = offset + 6;
-    setLoading(true);
-    setOffset(newOffset);
-
-    try {
-      const apiKey = process.env.NEXT_PUBLIC_GIPHY_API_KEY;
-
       if (!apiKey) {
         console.error("GIPHY API key not found");
         setGifs([...fallbackGifs].sort(() => Math.random() - 0.5));
@@ -103,19 +59,44 @@ export function GifPicker({ onSelect }: GifPickerProps) {
         )}&limit=6&offset=${newOffset}&rating=pg`
       );
       const data = await response.json();
-
       if (data.data && data.data.length > 0) {
         const urls = data.data.map((gif: any) => gif.images.fixed_height.url);
         setGifs(urls);
         setHasMore(newOffset + 6 < data.pagination.total_count);
       } else {
+        setGifs([]);
         setHasMore(false);
       }
     } catch (error) {
-      console.error("Failed to fetch more GIFs:", error);
+      console.error("Failed to fetch GIFs:", error);
+      setGifs(fallbackGifs);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = async () => {
+    if (!search.trim()) return;
+    setCurrentSearch(search);
+    setOffset(0);
+    setHistory([]);
+    await fetchGifs(0);
+  };
+
+  const handleNext = async () => {
+    if (loading || !hasMore) return;
+    const newOffset = offset + 6;
+    setHistory((prev) => [...prev, offset]);
+    setOffset(newOffset);
+    await fetchGifs(newOffset);
+  };
+
+  const handleBack = async () => {
+    if (loading || history.length === 0) return;
+    const previousOffset = history[history.length - 1];
+    setHistory((prev) => prev.slice(0, -1));
+    setOffset(previousOffset);
+    await fetchGifs(previousOffset);
   };
 
   const handleSelect = (gifUrl: string) => {
@@ -202,7 +183,17 @@ export function GifPicker({ onSelect }: GifPickerProps) {
                 ))}
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBack}
+                  disabled={loading || history.length === 0}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronRight className="h-4 w-4 rotate-180" />
+                  Back
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
