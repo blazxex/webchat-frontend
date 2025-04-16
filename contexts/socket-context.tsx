@@ -217,7 +217,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       });
 
       socket.on("public : user connected", (data) => {
-        fetchRooms()
+        fetchRooms();
       });
 
       // Clean up on unmount
@@ -469,8 +469,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     console.log("Room members:", room.members);
     console.log("Room hash name:", roomHashName);
     return room.members.map((m) => ({
-      id: m.id,
-      name: m.name,
+      id: m.user.id,
+      name: m.user.name,
     }));
   };
 
