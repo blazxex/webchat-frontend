@@ -4,6 +4,7 @@ import type React from "react";
 import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { useAuth } from "./auth-context";
 import { io, type Socket } from "socket.io-client";
+import { useRouter } from "next/navigation";
 
 // Types based on the provided schema
 export enum Theme {
@@ -83,6 +84,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   // Store sent message IDs to prevent duplicates
   const sentMessagesRef = useRef<Set<string>>(new Set());
+  const router = useRouter();
 
   // Connect to socket when user logs in
   useEffect(() => {
@@ -106,6 +108,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch rooms from API
         fetchRooms();
+      });
+
+      socket.on("connect_error", (err) => {
+        console.error("Connection failed:", err.message); // Will log: "invalid username"
+        router.push('/')
       });
 
       socket.on("user connected", (data) => {
@@ -174,9 +181,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         const { content, from, room: roomHashName, createdAt } = data;
 
         // Create a unique ID for this message
-        const messageId = `${roomHashName}-${from.id}-${content}-${
-          createdAt || Date.now()
-        }`;
+        const messageId = `${roomHashName}-${from.id}-${content}-${createdAt || Date.now()
+          }`;
 
         // Check if we've already processed this message
         if (sentMessagesRef.current.has(messageId)) {
@@ -233,7 +239,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             room.hashName === hashName ? { ...room, theme } : room
           )
         );
-        
+
         if (currentRoom?.hashName === hashName) {
           setCurrentRoom((prev) => prev && { ...prev, theme });
         }
