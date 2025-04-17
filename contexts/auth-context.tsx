@@ -46,7 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("username", username);
       setUser(user);
-      router.push("/chat");
     } catch (error) {
       console.error("Login failed:", error);
       throw error;

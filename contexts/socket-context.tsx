@@ -108,10 +108,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch rooms from API
         fetchRooms();
+        router.push("/chat");
       });
 
       socket.on("connect_error", (err) => {
-        console.error("Connection failed:", err.message); // Will log: "invalid username"
+        console.log("invalid user")
         router.push('/')
       });
 
