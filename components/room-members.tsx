@@ -33,15 +33,6 @@ export function RoomMembers() {
     <div className="p-4 border-l w-64 hidden md:block">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-medium">Members ({members.length})</h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLeaveRoom}
-          className="text-destructive"
-        >
-          <LogOut className="h-4 w-4 mr-1" />
-          Leave
-        </Button>
       </div>
       <ScrollArea className="h-[calc(100vh-180px)]">
         <div className="space-y-2">
