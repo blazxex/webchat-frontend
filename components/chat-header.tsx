@@ -173,10 +173,6 @@ export function ChatHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button variant="ghost" size="icon" onClick={logout}>
-          <LogOut className="h-5 w-5" />
-          <span className="sr-only">Logout</span>
-        </Button>
       </div>
     </div>
   );
