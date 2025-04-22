@@ -78,12 +78,12 @@ export function ChatHeader() {
   // Format room name for display
   const displayName =
     currentRoom.type === "private" &&
-    currentRoom.members &&
-    currentRoom.members.length > 0
+      currentRoom.members &&
+      currentRoom.members.length > 0
       ? currentRoom.members
-          .filter((m) => m.user.name !== localStorage.getItem("username"))
-          .map((m) => m.user.name)
-          .join(", ")
+        .filter((m) => m.user.name !== localStorage.getItem("username"))
+        .map((m) => m.user.name)
+        .join(", ")
       : currentRoom.name;
 
   return (
@@ -123,18 +123,18 @@ export function ChatHeader() {
               <div className="p-3 bg-muted rounded-md flex items-center justify-between">
                 <code className="text-sm">{currentRoom.hashName}</code>
                 {navigator.clipboard && <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopyHashName}
-                    className="flex items-center gap-1"
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                    {copied ? "Copied" : "Copy"}
-                  </Button>}
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyHashName}
+                  className="flex items-center gap-1"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copied ? "Copied" : "Copy"}
+                </Button>}
               </div>
               <div>
                 <h4 className="text-sm font-medium mb-2">
